@@ -4,9 +4,6 @@ One camera, three jobs: **AI traffic-signal control**, **license plate logging**
 
 > **Disclaimer:** This is a prototype / academic project, not an official enforcement system. Automated detections can be wrong and every violation should be reviewed by a human before any action is taken.
 
-## Demo
-
-<!-- Add a screenshot or GIF here, e.g. ![Demo](demo/demo.gif). Blur or fake any real plates. -->
 
 ## What It Does
 
@@ -72,9 +69,6 @@ py run_live_sumorl_violations.py --source 0 --agent outputs/2way-single-intersec
 
 Lane zones, signal timing (`DELTA_TIME`, `YELLOW_TIME`, `MIN_GREEN`) and the plate format (Indian pattern, e.g. `DL3CCR8958`) are set at the top of `run_live_sumorl_violations.py`. Lane zones are pixel boxes and must be adjusted to match your camera view.
 
-## Results
-
-<!-- Add real numbers once you have measured them, or delete this section. -->
 
 ## Limitations
 
