@@ -1,112 +1,98 @@
+# AI Traffic Violation System
 
-# AI Traffic System
+One camera, three jobs: **AI traffic-signal control**, **license plate logging**, and **red-light violation detection**.
 
-An AI-based traffic monitoring system that detects vehicles and traffic violations from video, reads license plates, and automatically generates violation tickets.
-
-> **Disclaimer:** This is a prototype / academic project. It is not an official enforcement system. Automated detections can be wrong and should be reviewed by a human before any ticket is issued.
+> **Disclaimer:** This is a prototype / academic project, not an official enforcement system. Automated detections can be wrong and every violation should be reviewed by a human before any action is taken.
 
 ## Demo
 
-<!-- Add a GIF or screenshot here, e.g. ![Demo](demo/demo.gif) -->
+<!-- Add a screenshot or GIF here, e.g. ![Demo](demo/demo.gif). Blur or fake any real plates. -->
 
-Sample ticket (dummy data): see `demo/sample_ticket.pdf`
+## What It Does
 
-## Features
-
-- Vehicle detection using YOLOv8
-- Violation detection: <!-- e.g. red-light jumping, over-speeding, no helmet, wrong lane -->
-- License plate detection and text recognition (EasyOCR)
-- Automatic violation ticket generation
-- Configurable rules (speed limits, fine amounts) via `config.yaml`
-
-## How It Works
-
-```
-Video / Camera feed
-        |
-        v
-Vehicle detection (YOLOv8)
-        |
-        v
-Violation check (rules in config.yaml)
-        |
-        v
-Plate detection + OCR (EasyOCR)
-        |
-        v
-Violation ticket generated
-```
+1. **Traffic control:** YOLOv8 tracks vehicles in four approach zones (north, east, south, west). The counts and queue lengths are turned into a SUMO-RL style observation, and a trained **DQN agent** chooses the signal phase.
+2. **Plate logging:** a plate detector plus `fast-plate-ocr` reads license plates. A plate is logged only after it is confirmed by several reads, together with the approach and signal phase.
+3. **Red-light check:** you draw a stop line on the video. A vehicle moving left to right that crosses the line while its approach is RED (according to the DQN signal) is logged as a violation, with a snapshot image and its plate.
 
 ## Tech Stack
 
 | Part | Tool |
 |---|---|
 | Language | Python |
-| Object detection | YOLOv8 (Ultralytics) |
-| Video / image processing | OpenCV |
-| Plate text recognition | EasyOCR |
+| Vehicle detection and tracking | YOLOv8 (Ultralytics) + ByteTrack |
+| Video processing | OpenCV |
+| Signal control | DQN (Stable-Baselines3), SUMO-RL style observation |
+| Plate OCR | fast-plate-ocr |
+| Training environment | SUMO + sumo-rl (only needed to retrain the agent) |
 
 ## Installation
 
 ```bash
-git clone https://github.com/<your-username>/ai-traffic-system.git
-cd ai-traffic-system
+git clone https://github.com/<your-username>/ai-traffic-violation-system.git
+cd ai-traffic-violation-system
 python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+venv\Scripts\activate         # Linux/Mac: source venv/bin/activate
 pip install -r requirements.txt
 ```
+
+You also need:
+- `plates.pt`: the trained plate detector
+- `outputs/2way-single-intersection/dqn_model.zip`: the trained DQN agent
 
 ## Usage
 
 ```bash
-python main.py --source path/to/video.mp4
+# Full system with a video file
+py run_live_sumorl_violations.py --source traffic.mp4 --agent outputs/2way-single-intersection/dqn_model.zip
+
+# Webcam, without plate reading
+py run_live_sumorl_violations.py --source 0 --agent outputs/2way-single-intersection/dqn_model.zip --no-plates
 ```
 
-<!-- Replace with your actual entry point and arguments -->
+**Controls in the video window**
 
-Output tickets are saved in the `output/` folder.
+| Key | Action |
+|---|---|
+| `L` | then click 2 points to set the stop line (saved to `stop_line.json`) |
+| click | print pixel coordinates |
+| `ESC` / `q` | quit |
 
-## Project Structure
+**Useful options:** `--process-width 640` (faster, lower resolution), `--green-phases 2,3` (phases in which the monitored approach is green), `--debug-plates` (print every OCR read).
 
-```
-ai-traffic-system/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── config.yaml
-├── main.py
-├── src/
-│   ├── detection/
-│   ├── violations/
-│   ├── plate_recognition/
-│   └── ticketing/
-├── models/
-├── data/sample/
-├── demo/
-└── docs/
-```
+## Outputs
+
+| File / folder | Contents |
+|---|---|
+| `plates_traffic_log.csv` | confirmed plates with approach and signal phase |
+| `violations_log.csv` | red-light violations: time, track id, vehicle, phase, state, plate, image |
+| `violations/` | one snapshot image per violation |
+| `crops/` | plate crops |
+
+## Configuration
+
+Lane zones, signal timing (`DELTA_TIME`, `YELLOW_TIME`, `MIN_GREEN`) and the plate format (Indian pattern, e.g. `DL3CCR8958`) are set at the top of `run_live_sumorl_violations.py`. Lane zones are pixel boxes and must be adjusted to match your camera view.
 
 ## Results
 
-| Metric | Value |
-|---|---|
-| Vehicle detection mAP | <!-- fill in --> |
-| Plate recognition accuracy | <!-- fill in --> |
-| Processing speed (FPS) | <!-- fill in --> |
+<!-- Add real numbers once you have measured them, or delete this section. -->
 
-**Known limitations:** accuracy drops at night, in heavy rain, and with blurry or angled plates.
+## Limitations
+
+- Lane zones and the stop line are set manually for one camera view.
+- Plate reading drops in accuracy at night, in rain, and with small or angled plates.
+- Violation logic currently covers left-to-right (eastbound) traffic only.
+- Signal state comes from the DQN agent, not from a real traffic light.
 
 ## Ethical Considerations
 
-- Automated enforcement can make mistakes; tickets should be reviewed by a person before being issued.
-- License plates are personal data. Do not publish real footage or tickets without anonymizing them.
-- This project uses only test or publicly licensed data.
+- Automated enforcement can make mistakes; a person should review every violation.
+- License plates are personal data. Do not publish real footage, plate crops or logs without anonymizing them.
 
 ## Future Work
 
-- Emergency vehicle priority
-- Multi-camera / multi-junction support
-- Web dashboard for reviewing tickets
+- Violation checks for all approaches
+- Other violations (speeding, helmet, wrong lane)
+- PDF ticket generation and a review dashboard
 
 ## License
 
@@ -115,5 +101,7 @@ MIT License. See `LICENSE`.
 ## Acknowledgements
 
 - [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics)
-- [EasyOCR](https://github.com/JaidedAI/EasyOCR)
+- [SUMO-RL](https://github.com/LucasAlegre/sumo-rl)
+- [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3)
+- [fast-plate-ocr](https://github.com/ankandrew/fast-plate-ocr)
 - [OpenCV](https://opencv.org/)
