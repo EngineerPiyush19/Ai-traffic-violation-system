@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Secrets
+.env
+
+# Logs and evidence (contain real license plates - keep private)
+plates_traffic_log.csv
+violations_log.csv
+violations/
+crops/
+
+# Large files
+*.mp4
+*.avi
+*.mov
+runs/
+
+# Auto-downloaded YOLO weights (plates.pt and the DQN .zip are kept;
+# add them here too if they are too large for GitHub)
+yolov8*.pt
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
