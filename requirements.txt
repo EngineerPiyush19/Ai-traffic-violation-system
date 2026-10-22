@@ -1,0 +1,11 @@
+# Needed to run main.py and plates.py
+ultralytics
+opencv-python
+numpy
+stable-baselines3
+fast-plate-ocr[onnx]
+
+# Only needed to retrain the DQN agent (training/train_dqn.py).
+# Also requires SUMO to be installed and the SUMO_HOME environment variable set.
+# sumo-rl
+# traci
