@@ -107,8 +107,6 @@ Crops are saved in `crops/`, and plates seen at least twice are printed at the e
 
 Lane zones, signal timing (`DELTA_TIME`, `YELLOW_TIME`, `MIN_GREEN`) and the plate format (Indian pattern, e.g. `DL3CCR8958`) are set at the top of `run_live_sumorl_violations.py`. Lane zones are pixel boxes and must be adjusted to match your camera view.
 
-## Results
-
 <!-- Add real measured numbers (plate read accuracy, FPS, violations caught vs missed), or delete this section. -->
 
 ## Limitations
