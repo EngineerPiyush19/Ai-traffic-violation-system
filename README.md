@@ -23,7 +23,9 @@ A DQN-based adaptive traffic signal controller integrated with YOLO vehicle dete
 - TraCI
 
 ## Architecture
-[Architecture Diagram]
+## System Architecture
+
+![Architecture](assets/architecture.png)
 
 ## Results
 | Metric | Fixed Timer | DQN |
