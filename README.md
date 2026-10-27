@@ -40,4 +40,4 @@ A DQN-based adaptive traffic signal controller integrated with YOLO vehicle dete
 ## Future Work
 
 ## Team
-Brochacho Labs
+Brochacho Lab
